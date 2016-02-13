@@ -35,7 +35,7 @@
         /// </summary>
         /// <param name="type">The type of dish.</param>
         /// <returns>A dish.</returns>
-        Dish GetSelectedDish(int type);
+        Dish GetSelectedDish(DishType type);
 
         /// <summary>
         /// Removes a dish from the menu.
