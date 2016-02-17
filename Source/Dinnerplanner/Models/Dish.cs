@@ -24,7 +24,15 @@
         public string Description { get; set; }
 
         public HashSet<Ingredient> Ingredients { get; set; }
-	    
+
+        public float Cost
+        {
+            get
+            {
+                return Ingredients.Sum(ingredient => (float)ingredient.Price);
+            }
+        }
+
         public bool Contains(String filter)
         {
             var lowerName = Name.ToLower();

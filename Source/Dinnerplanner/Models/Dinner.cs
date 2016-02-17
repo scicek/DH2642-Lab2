@@ -8,23 +8,20 @@
 	    public Dinner()
         {	
 	        Dishes = new HashSet<Dish>();
-
+	        FullMenu = new HashSet<Dish>();
 	        PopulateDishes();
         }
 
         public int NumberOfGuests { get; set; }
 
-        public HashSet<Dish> FullMenu
-        {
-            get { return Dishes; }
-        }
+        public HashSet<Dish> FullMenu { get; private set; }
 
         public HashSet<Ingredient> AllIngredients
         {
             get
             {
                 var ingredients = new HashSet<Ingredient>();
-                foreach (var ingredient in Dishes.SelectMany(dish => dish.Ingredients))
+                foreach (var ingredient in FullMenu.SelectMany(dish => dish.Ingredients))
                     ingredients.Add(ingredient);
 
                 return ingredients;
@@ -35,7 +32,7 @@
         {
             get
             {
-                return AllIngredients.Aggregate<Ingredient, float>(0, (current, ingredient) => (float) (current + (ingredient.Price * ingredient.Quantity)));
+                return NumberOfGuests * FullMenu.Sum(dish => dish.Cost);
             }
         }
 
@@ -49,10 +46,9 @@
 	    public HashSet<Dish> GetDishesOfType(DishType type)
         {
 		    var results = new HashSet<Dish>();
-		    
-            foreach(var dish in Dishes)
-                if(dish.Type == type)
-				    results.Add(dish);
+
+            foreach (var dish in Dishes.Where(dish => dish.Type == type))
+                results.Add(dish);
 		    
 		    return results;
 	    }
@@ -75,17 +71,18 @@
 
         public void AddDishToMenu(Dish dish)
         {
-            Dishes.Add(dish);
+            FullMenu.RemoveWhere(d => d.Type == dish.Type);
+            FullMenu.Add(dish);
         }
 
         public Dish GetSelectedDish(DishType type)
         {
-            return Dishes.First(dish => dish.Type == type);
+            return FullMenu.FirstOrDefault(dish => dish.Type == type);
         }
 
         public void RemoveDishFromMenu(Dish dish)
         {
-            Dishes.Remove(dish);
+            FullMenu.Remove(dish);
         }
 
         private void PopulateDishes()
@@ -128,8 +125,29 @@
             meatBallsDish.Ingredients.Add(parmesanCheeseIngredient);
             meatBallsDish.Ingredients.Add(breadCrumbsIngredient);
 
+            var iceCream = new Dish("Ice cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man.");
+            var milk = new Ingredient("Milk", 0.5, "liters", 5);
+            iceCream.Ingredients.Add(milk);
+
             Dishes.Add(frenchToastDish);
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
+            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
             Dishes.Add(meatBallsDish);
+            Dishes.Add(iceCream);
+
+            AddDishToMenu(frenchToastDish);
+            AddDishToMenu(meatBallsDish);
+            AddDishToMenu(iceCream);
+
+            NumberOfGuests = 2;
         }
     }
 }

@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="Dinnerplanner.Views.Controls.IngredientsGridControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             x:Name="IngredientsUserControl"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <DataGrid ItemsSource="{Binding ElementName=IngredientsUserControl,Path=Ingredients}" AutoGenerateColumns="False" FontSize="17" GridLinesVisibility="Vertical" AlternatingRowBackground="LightGray" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False">
+        <DataGrid.Columns>
+            <DataGridTemplateColumn SortMemberPath="Name" Header="Ingredient" CanUserSort="True">
+                <DataGridTemplateColumn.CellTemplate >
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" TextAlignment="Left"/>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <DataGridTemplateColumn SortMemberPath="Quantity" Header="Cost" CanUserSort="True">
+                <DataGridTemplateColumn.CellTemplate >
+                    <DataTemplate>
+                        <TextBlock TextAlignment="Left">
+                            <Run Text="{Binding Quantity}"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding Unit}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <DataGridTemplateColumn SortMemberPath="Price" Header="Cost" CanUserSort="True">
+                <DataGridTemplateColumn.CellTemplate >
+                    <DataTemplate>
+                        <TextBlock TextAlignment="Left">
+                            <Run Text="{Binding Price}"/>
+                            <Run Text=" $"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+        </DataGrid.Columns>
+    </DataGrid>
+</UserControl>

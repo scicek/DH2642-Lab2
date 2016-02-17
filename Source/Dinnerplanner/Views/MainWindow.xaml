@@ -1,9 +1,104 @@
 ﻿<Window x:Class="Dinnerplanner.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Dinner Planner" Height="350" Width="525">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Dinnerplanner.Views.Controls"
+        xmlns:viewModels="clr-namespace:Dinnerplanner.ViewModels"
+        xmlns:converters="clr-namespace:Dinnerplanner.Views.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel, IsDesignTimeCreatable=True}"
+        Title="Dinner Planner" Height="600" Width="800"  >
+    <Window.Resources>
+        <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter"/>
+    </Window.Resources>
     <Grid>
-        <Label Content="Hello World!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
+        <TabControl Grid.Column="0" FontSize="17">
+            <TabItem Header="Starter">
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Starters}" SelectedDish="OnSelectedDish"/>
+            </TabItem>
+            <TabItem Header="Main">
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Mains}" SelectedDish="OnSelectedDish"/>
+            </TabItem>
+            <TabItem Header="Dessert">
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Desserts}" SelectedDish="OnSelectedDish"/>
+            </TabItem>
+        </TabControl>
+        <ContentControl Grid.Column="1" Width="12" HorizontalAlignment="Stretch">
+            <Grid>
+                <Border Background="#F6F6F6" BorderThickness="1" BorderBrush="Black"/>
+                <Label Content="⁞" Background="Transparent" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+        </ContentControl>
+        <Grid Grid.Column="2" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+               <Grid.ColumnDefinitions>
+                   <ColumnDefinition/>
+                   <ColumnDefinition/>
+               </Grid.ColumnDefinitions>
+               <Grid.RowDefinitions>
+                   <RowDefinition/>
+                   <RowDefinition/>
+               </Grid.RowDefinitions>
+                
+               <Label Content="Number of people:" Height="Auto" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0" FontSize="17"/>
+                <Label Content="Total cost:" Grid.Row="1" Grid.Column="0" FontSize="17"/>
+
+                <xctk:IntegerUpDown Height="Auto" HorizontalAlignment="Left" Width="50" Value="{Binding Guests}" Minimum="0" Grid.Row="0" Grid.Column="1" FontSize="17"/>
+                <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" FontSize="17">
+                    <Run Text="$ "/>
+                    <Run Text="{Binding TotalCost}"/>
+                </TextBlock>
+            </Grid>
+
+            <Label Grid.Row="1" Content="Dinner menu" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center"/>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2" VerticalAlignment="Top">
+                <ItemsControl ItemsSource="{Binding Menu}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0, 20, 0, 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            
+                                <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Source="{Binding Image, Converter={StaticResource StringToImageSourceConverter}}"  Width="60"/>
+                                <StackPanel Grid.Column="1" Margin="10, 0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Run Text="{Binding Type}"/>
+                                        <Run Text=": "/>
+                                        <Run Text="{Binding Name}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Run Text="Cost: $"/>
+                                        <Run Text="{Binding Cost, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="2" Tag="{Binding }" Content="X" Width="25" Height="25" VerticalAlignment="Center" HorizontalAlignment="Right" Click="OnRemoveDish"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 10, 0, 3">
+                <Button Content="Preparation" Padding="5" FontSize="17" Command="{Binding ShowPreparations}"/>
+                <Button Content="Ingredients" Padding="5" Margin="10, 0" FontSize="17" Command="{Binding ShowIngredients}"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

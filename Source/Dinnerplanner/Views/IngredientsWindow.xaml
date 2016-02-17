@@ -1,0 +1,7 @@
+﻿<Window x:Class="Dinnerplanner.Views.IngredientsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Dinnerplanner.Views.Controls"
+        Title="Dinner Planner - Ingredients" Height="Auto" Width="400" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Closing="IngredientsWindow_OnClosing">
+    <controls:IngredientsGridControl Ingredients="{Binding Ingredients}"/>
+</Window>

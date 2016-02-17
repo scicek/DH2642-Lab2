@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="Dinnerplanner.Views.Controls.DishFinderControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:searchTextBox="clr-namespace:Dinnerplanner.Views.Controls.SearchTextBox"
+             xmlns:converters="clr-namespace:Dinnerplanner.Views.Converters"
+             mc:Ignorable="d"
+             x:Name="DishFinderUserControl"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="SearchTextBox/SearchTextBoxStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <DockPanel>
+        <searchTextBox:SearchTextBox DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="20, 7, 0, 3" FontSize="17" AllowEmptySearches="False" SearchMode="Regular" Width="150" Style="{StaticResource SearchBoxStyle}"/>
+        <Separator DockPanel.Dock="Top"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ElementName=DishFinderUserControl,Path=Dishes}" FontSize="17">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="25, 30, 0, 0" MouseLeftButtonUp="OnMouseLeftButtonUp" Tag="{Binding}">
+                            <Image VerticalAlignment="Center" HorizontalAlignment="Center" Source="{Binding Image, Converter={StaticResource StringToImageSourceConverter}}" Width="100" Height="100"/>
+                            <Label HorizontalAlignment="Center" Content="{Binding Path=Name}" FontSize="17"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
