@@ -1,20 +1,57 @@
 ﻿namespace Dinnerplanner.Models
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public class Dinner : IDinner
     {
-	    public Dinner()
+        private int _numberOfGuests;
+        private HashSet<Dish> _fullMenu;
+        private HashSet<Dish> _dishes;
+
+        public Dinner()
         {	
 	        Dishes = new HashSet<Dish>();
 	        FullMenu = new HashSet<Dish>();
-	        PopulateDishes();
+
+            // The delayed population of dishes shows how the view react to updates from the model (through the viewmodels).
+	        Task.Delay(3000).ContinueWith(task => PopulateDishes());
         }
 
-        public int NumberOfGuests { get; set; }
+        public event EventHandler DishesChanged; 
+        public event EventHandler MenuChanged; 
+        public event EventHandler NumberOfGuestsChanged;
 
-        public HashSet<Dish> FullMenu { get; private set; }
+        public int NumberOfGuests
+        {
+            get
+            {
+                return _numberOfGuests; 
+                
+            }
+
+            set
+            {
+                _numberOfGuests = value;
+                NumberOfGuestsChanged.Raise(this);
+            }
+        }
+
+        public HashSet<Dish> FullMenu
+        {
+            get
+            {
+                return _fullMenu;
+            }
+
+            private set
+            {
+                _fullMenu = value;
+                MenuChanged.Raise(this);
+            }
+        }
 
         public HashSet<Ingredient> AllIngredients
         {
@@ -36,14 +73,26 @@
             }
         }
 
-        private HashSet<Dish> Dishes { get; set; }
+        private HashSet<Dish> Dishes
+        {
+            get
+            {
+                return _dishes; 
+            }
+
+            set
+            {
+                _dishes = value;
+                DishesChanged.Raise(this);
+            }
+        }
 
         /// <summary>
-	    /// Returns the set of dishes of specific type. (1 = starter, 2 = main, 3 = desert).
-	    /// </summary>
-	    /// <param name="type">The type of dish to get.</param>
-	    /// <returns>All dishes of the given type.</returns>
-	    public HashSet<Dish> GetDishesOfType(DishType type)
+        /// Returns the set of dishes of specific type. (1 = starter, 2 = main, 3 = desert).
+        /// </summary>
+        /// <param name="type">The type of dish to get.</param>
+        /// <returns>All dishes of the given type.</returns>
+        public HashSet<Dish> GetDishesOfType(DishType type)
         {
 		    var results = new HashSet<Dish>();
 
@@ -73,6 +122,7 @@
         {
             FullMenu.RemoveWhere(d => d.Type == dish.Type);
             FullMenu.Add(dish);
+            MenuChanged.Raise(this);
         }
 
         public Dish GetSelectedDish(DishType type)
@@ -83,6 +133,13 @@
         public void RemoveDishFromMenu(Dish dish)
         {
             FullMenu.Remove(dish);
+            MenuChanged.Raise(this);
+        }
+
+        private void AddDish(Dish dish)
+        {
+            Dishes.Add(dish);
+            DishesChanged.Raise(this);
         }
 
         private void PopulateDishes()
@@ -126,28 +183,25 @@
             meatBallsDish.Ingredients.Add(breadCrumbsIngredient);
 
             var iceCream = new Dish("Ice cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man.");
-            var milk = new Ingredient("Milk", 0.5, "liters", 5);
+            var milk = new Ingredient("Milk", 0.5, "l", 10);
             iceCream.Ingredients.Add(milk);
 
-            Dishes.Add(frenchToastDish);
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(new Dish("Fake Ice Cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man."));
-            Dishes.Add(meatBallsDish);
-            Dishes.Add(iceCream);
+            var sundae = new Dish("Sundae", DishType.Dessert, "icecream.jpg", "Stack vanilla ice cream, whipped cream, sprinkles, syrup and fruit.");
+            var fruit = new Ingredient("Fruit", 0.2, "g", 20);
+            sundae.Ingredients.Add(milk);
+            sundae.Ingredients.Add(fruit);
+
+
+            AddDish(frenchToastDish);
+            AddDish(meatBallsDish);
+            AddDish(iceCream);
+            AddDish(sundae);
 
             AddDishToMenu(frenchToastDish);
             AddDishToMenu(meatBallsDish);
             AddDishToMenu(iceCream);
 
-            NumberOfGuests = 2;
+            NumberOfGuests = 6;
         }
     }
 }

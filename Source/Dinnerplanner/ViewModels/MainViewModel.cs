@@ -1,8 +1,11 @@
 ﻿namespace Dinnerplanner.ViewModels
 {
+    using System;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Windows;
     using System.Windows.Input;
+    using System.Windows.Threading;
     using Models;
     using Views;
 
@@ -16,9 +19,7 @@
         private readonly IngredientsViewModel _ingredientsViewModel;
         private readonly PreparationViewModel _preparationViewModel;
         
-        private Dinner _dinner;
-        private int _guests;
-        private double _totalCost;
+        private readonly Dinner _dinner;
         private ObservableCollection<Dish> _starters;
         private ObservableCollection<Dish> _mains;
         private ObservableCollection<Dish> _desserts;
@@ -35,11 +36,10 @@
             _preparationViewModel = (PreparationViewModel) _preparationWindow.DataContext;
            
             Starters = new ObservableCollection<Dish>();
-            _mains = new ObservableCollection<Dish>();
+            Mains = new ObservableCollection<Dish>();
             Desserts = new ObservableCollection<Dish>();
             Menu = new ObservableCollection<Dish>();
-            Guests = _dinner.NumberOfGuests;
-            TotalCost = _dinner.TotalMenuPrice;
+
             ShowPreparations = new DelegateCommand(o =>
             {
                 _preparationViewModel.Starter = _dinner.GetSelectedDish(DishType.Starter);
@@ -53,19 +53,9 @@
                 _ingredientsWindow.Show();
             }, o => Menu.Any());
 
-            foreach (var dish in _dinner.GetDishesOfType(DishType.Starter))
-                Starters.Add(dish);
-
-            foreach (var dish in _dinner.GetDishesOfType(DishType.Main))
-                Mains.Add(dish);
-
-            foreach (var dish in _dinner.GetDishesOfType(DishType.Dessert))
-                Desserts.Add(dish);
-
-            foreach (var dish in _dinner.FullMenu)
-            {
-                Menu.Add(dish);
-            }
+            _dinner.MenuChanged += OnMenuChanged;
+            _dinner.DishesChanged += OnDishesChanged;
+            _dinner.NumberOfGuestsChanged += OnNumberOfGuestsChanged;
         }
 
         public ObservableCollection<Dish> Starters
@@ -118,16 +108,14 @@
         {
             get
             {
-                return _guests; 
-                
+                return _dinner.NumberOfGuests; 
             }
 
             set
             {
-                _guests = value;
-                _dinner.NumberOfGuests = _guests;
-                TotalCost = _dinner.TotalMenuPrice;
+                _dinner.NumberOfGuests = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TotalCost");
             }
         }
 
@@ -135,33 +123,70 @@
         {
             get
             {
-                return _totalCost; 
-                
-            }
-
-            set
-            {
-                _totalCost = value;
-                OnPropertyChanged();
+                return _dinner.TotalMenuPrice; 
             }
         }
 
-        public ICommand ShowPreparations { get; set; }
+        public DelegateCommand ShowPreparations { get; set; }
 
-        public ICommand ShowIngredients { get; set; }
+        public DelegateCommand ShowIngredients { get; set; }
 
-        public void OnSelectedDish(Dish dish)
+        public void OnSelectDish(Dish dish)
         {
             _dishViewModel.Dish = dish;
             _dishViewModel.Guests = Guests;
             _dishWindow.Show();
         }
 
+        public void OnAddDish(Dish dish)
+        {
+            _dinner.AddDishToMenu(dish);
+        }
+
         public void OnRemoveDish(Dish dish)
         {
-            Menu.Remove(dish);
             _dinner.RemoveDishFromMenu(dish);
-            TotalCost = _dinner.TotalMenuPrice;
+        }
+
+        private void OnNumberOfGuestsChanged(object sender, EventArgs eventArgs)
+        {
+            OnPropertyChanged("Guests");
+            OnPropertyChanged("TotalCost");
+        }
+
+        private void OnDishesChanged(object sender, EventArgs eventArgs)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Starters.Clear();
+                Mains.Clear();
+                Desserts.Clear();
+
+                foreach (var dish in _dinner.GetDishesOfType(DishType.Starter))
+                    Starters.Add(dish);
+
+                foreach (var dish in _dinner.GetDishesOfType(DishType.Main))
+                    Mains.Add(dish);
+
+                foreach (var dish in _dinner.GetDishesOfType(DishType.Dessert))
+                    Desserts.Add(dish);
+            });
+        }
+
+        private void OnMenuChanged(object sender, EventArgs eventArgs)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Menu.Clear();
+                foreach (var dish in _dinner.FullMenu)
+                    Menu.Add(dish);
+
+                ShowPreparations.RaiseCanExecute();
+                ShowIngredients.RaiseCanExecute();
+            });
+            
+
+            OnPropertyChanged("TotalCost");
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace Dinnerplanner.Views.Controls
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
@@ -16,21 +15,21 @@
     /// </summary>
     public partial class DishFinderControl : UserControl, INotifyPropertyChanged
     {
-        public static readonly DependencyProperty DishesProperty = DependencyProperty.Register("Dishes", typeof(ObservableCollection<Dish>), typeof(DishFinderControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public static readonly DependencyProperty DishesProperty = DependencyProperty.Register("Dishes",
+            typeof (ObservableCollection<Dish>), typeof (DishFinderControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public DishFinderControl()
         {
             InitializeComponent();
         }
 
-        public event EventHandler<Dish> SelectedDish;
+        public event EventHandler<Dish> SelectDish;
+        public event EventHandler<Dish> AddDish;
 
         public ObservableCollection<Dish> Dishes
         {
-            get
-            {
-                return (ObservableCollection<Dish>)GetValue(DishesProperty);
-            }
+            get { return (ObservableCollection<Dish>) GetValue(DishesProperty); }
 
             set
             {
@@ -41,7 +40,12 @@
 
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            SelectedDish.Raise(this, (Dish)((FrameworkElement)sender).Tag);
+            SelectDish.Raise(this, (Dish) ((FrameworkElement) sender).Tag);
+        }
+
+        private void OnClick(object sender, RoutedEventArgs e)
+        {
+            AddDish.Raise(this, (Dish)((FrameworkElement)sender).Tag);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -22,13 +22,13 @@
 
         <TabControl Grid.Column="0" FontSize="17">
             <TabItem Header="Starter">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Starters}" SelectedDish="OnSelectedDish"/>
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Starters}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
             </TabItem>
             <TabItem Header="Main">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Mains}" SelectedDish="OnSelectedDish"/>
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Mains}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
             </TabItem>
             <TabItem Header="Dessert">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Desserts}" SelectedDish="OnSelectedDish"/>
+                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Desserts}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
             </TabItem>
         </TabControl>
         <ContentControl Grid.Column="1" Width="12" HorizontalAlignment="Stretch">
@@ -60,14 +60,14 @@
                 <xctk:IntegerUpDown Height="Auto" HorizontalAlignment="Left" Width="50" Value="{Binding Guests}" Minimum="0" Grid.Row="0" Grid.Column="1" FontSize="17"/>
                 <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" FontSize="17">
                     <Run Text="$ "/>
-                    <Run Text="{Binding TotalCost}"/>
+                    <Run Text="{Binding TotalCost, Mode=OneWay}"/>
                 </TextBlock>
             </Grid>
 
             <Label Grid.Row="1" Content="Dinner menu" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center"/>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2" VerticalAlignment="Top">
-                <ItemsControl ItemsSource="{Binding Menu}">
+                <ItemsControl ItemsSource="{Binding Menu, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0, 20, 0, 0">

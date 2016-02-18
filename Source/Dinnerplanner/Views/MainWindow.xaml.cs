@@ -18,9 +18,14 @@
             Loaded += (sender, args) => _mainViewModel = (MainViewModel) DataContext;
         }
 
-        private void OnSelectedDish(object sender, Dish dish)
+        private void OnSelectDish(object sender, Dish dish)
         {
-            _mainViewModel.OnSelectedDish(dish);
+            _mainViewModel.OnSelectDish(dish);
+        }
+
+        private void OnAddDish(object sender, Dish dish)
+        {
+            _mainViewModel.OnAddDish(dish);
         }
 
         private void OnRemoveDish(object sender, RoutedEventArgs e)

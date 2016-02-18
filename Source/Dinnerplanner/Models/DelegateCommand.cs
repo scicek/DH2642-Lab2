@@ -49,5 +49,10 @@
                 ExecuteAction(parameter);
             }
         }
+
+        public void RaiseCanExecute()
+        {
+            CanExecuteChanged.Raise(this);
+        }
     }
 }
