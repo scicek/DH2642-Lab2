@@ -17,7 +17,7 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <DataGridTemplateColumn SortMemberPath="Quantity" Header="Cost" CanUserSort="True">
+            <DataGridTemplateColumn SortMemberPath="Quantity" Header="Quantity" CanUserSort="True">
                 <DataGridTemplateColumn.CellTemplate >
                     <DataTemplate>
                         <TextBlock TextAlignment="Left">

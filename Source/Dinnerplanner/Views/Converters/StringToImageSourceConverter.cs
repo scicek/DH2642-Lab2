@@ -13,7 +13,7 @@
                 return null;
             
             var imageName = (string)value;
-            return new Uri("pack://application:,,,/Resources/" + imageName, UriKind.Absolute);
+            return new Uri(imageName);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

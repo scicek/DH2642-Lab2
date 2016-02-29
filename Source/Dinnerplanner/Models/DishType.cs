@@ -2,6 +2,7 @@
 {
     public enum DishType
     {
+        None,
         Starter,
         Main,
         Dessert

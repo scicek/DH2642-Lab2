@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Windows;
@@ -17,7 +18,7 @@
     {
         public static readonly DependencyProperty DishesProperty = DependencyProperty.Register("Dishes",
             typeof (ObservableCollection<Dish>), typeof (DishFinderControl),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, DishesChanged));
 
         public DishFinderControl()
         {
@@ -26,6 +27,7 @@
 
         public event EventHandler<Dish> SelectDish;
         public event EventHandler<Dish> AddDish;
+        public event EventHandler<string> Search;
 
         public ObservableCollection<Dish> Dishes
         {
@@ -46,6 +48,25 @@
         private void OnClick(object sender, RoutedEventArgs e)
         {
             AddDish.Raise(this, (Dish)((FrameworkElement)sender).Tag);
+        }
+        
+        private void SearchTextBox_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Search.Raise(this, SearchTextBox.Text);
+                Loading.Visibility = Visibility.Visible;
+            }
+        }
+
+        private static void DishesChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        {
+            var control = (DishFinderControl) dependencyObject;
+            if (control == null || control.DishesList.Items == null)
+                return;
+
+            var collection = (INotifyCollectionChanged)control.DishesList.Items;
+            collection.CollectionChanged += (sender, args) => control.Loading.Visibility = Visibility.Hidden;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

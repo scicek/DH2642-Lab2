@@ -3,10 +3,18 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
+    using System.Windows;
+    using BigOven;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public class Dinner : IDinner
     {
+        private const string BigOvenURL = "http://api.bigoven.com/";
+        private const string BigOvenApiKey = "18f3cT02U9f6yRl3OKDpP8NA537kxYKu";
         private int _numberOfGuests;
         private HashSet<Dish> _fullMenu;
         private HashSet<Dish> _dishes;
@@ -15,21 +23,18 @@
         {	
 	        Dishes = new HashSet<Dish>();
 	        FullMenu = new HashSet<Dish>();
-
-            // The delayed population of dishes shows how the view react to updates from the model (through the viewmodels).
-	        Task.Delay(3000).ContinueWith(task => PopulateDishes());
         }
 
         public event EventHandler DishesChanged; 
         public event EventHandler MenuChanged; 
         public event EventHandler NumberOfGuestsChanged;
+        public event EventHandler<Tuple<DishType, HashSet<Dish>>> FilteredDishes;
 
         public int NumberOfGuests
         {
             get
             {
                 return _numberOfGuests; 
-                
             }
 
             set
@@ -53,6 +58,15 @@
             }
         }
 
+        public void GetAllDishes(DishType type, string filter)
+        {
+            Task.Run(() =>
+            {
+                var result = GetRecipes(type, filter);
+                FilteredDishes.Raise(this, new Tuple<DishType, HashSet<Dish>>(type, result.Result));
+            }); 
+        }
+
         public HashSet<Ingredient> AllIngredients
         {
             get
@@ -69,7 +83,7 @@
         {
             get
             {
-                return NumberOfGuests * FullMenu.Sum(dish => dish.Cost);
+                return (float) Math.Round(NumberOfGuests * FullMenu.Sum(dish => dish.Cost));
             }
         }
 
@@ -142,66 +156,107 @@
             DishesChanged.Raise(this);
         }
 
-        private void PopulateDishes()
+        private static async Task<HashSet<Dish>> GetRecipes(DishType type, string filter)
         {
-            var frenchToastDish = new Dish("French toast", DishType.Starter, "toast.jpg", "In a large mixing bowl, beat the eggs. Add the milk, brown sugar and nutmeg; stir well to combine. Soak bread slices in the egg mixture until saturated. Heat a lightly oiled griddle or frying pan over medium high heat. Brown slices on both sides, sprinkle with cinnamon and serve hot.");
-            var eggsIngredient = new Ingredient("eggs", 0.5, "", 1);
-            var milkIngredient = new Ingredient("milk", 30, "ml", 6);
-            var brownSugarIngredient = new Ingredient("brown sugar", 7, "g", 1);
-            var groundNutmegIngredient = new Ingredient("ground nutmeg", 0.5, "g", 12);
-            var whiteBreadIngredient = new Ingredient("white bread", 2, "slices", 2);
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(BigOvenURL);
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            frenchToastDish.Ingredients.Add(eggsIngredient);
-            frenchToastDish.Ingredients.Add(milkIngredient);
-            frenchToastDish.Ingredients.Add(brownSugarIngredient);
-            frenchToastDish.Ingredients.Add(groundNutmegIngredient);
-            frenchToastDish.Ingredients.Add(whiteBreadIngredient);
+                    var response = await client.GetAsync("recipes?api_key=" + BigOvenApiKey + "&any_kw=" + filter + "&pg=1&rpp=10").ConfigureAwait(false);
+                    var set = new HashSet<Dish>();
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var recipes = await response.Content.ReadAsAsync<object>();
+                        dynamic parsedRecipes = JObject.Parse(recipes.ToString());
 
-            var meatBallsDish = new Dish("Meat balls", DishType.Main, "meatballs.jpg", "Preheat an oven to 400 degrees F (200 degrees C). Place the beef into a mixing bowl, and season with salt, onion, garlic salt, Italian seasoning, oregano, red pepper flakes, hot pepper sauce, and Worcestershire sauce; mix well. Add the milk, Parmesan cheese, and bread crumbs. Mix until evenly blended, then form into 1 1/2-inch meatballs, and place onto a baking sheet. Bake in the preheated oven until no longer pink in the center, 20 to 25 minutes.");
-            var groundBeefIngredient = new Ingredient("extra lean ground beef", 115, "g", 20);
-            var seaSaltIngredient = new Ingredient("sea salt", 0.7, "g", 3);
-            var onionIngredient = new Ingredient("small onion, diced", 0.25, "", 2);
-            var garlicSaltIngredient = new Ingredient("garlic salt", 0.6, "g", 3);
-            var italianSeasoningIngredient = new Ingredient("Italian seasoning", 0.3, "g", 3);
-            var driedOreganoIngredient = new Ingredient("dried oregano", 0.3, "g", 3);
-            var redPepperFlakesIngredient = new Ingredient("crushed red pepper flakes", 0.6, "g", 3);
-            var worcestershireSauceIngredient = new Ingredient("Worcestershire sauce", 16, "ml", 7);
-            var milk2Ingredient = new Ingredient("milk", 20, "ml", 4);
-            var parmesanCheeseIngredient = new Ingredient("grated Parmesan cheese", 5, "g", 8);
-            var breadCrumbsIngredient = new Ingredient("seasoned bread crumbs", 115, "g", 4);
+                        foreach (var result in parsedRecipes.Results)
+                        {
+                            try
+                            {
+                                response = await client.GetAsync("recipe/" + result.RecipeID + "/?api_key=" + BigOvenApiKey).ConfigureAwait(false);
+                                var recipe = await response.Content.ReadAsAsync<BigOvenRecipe>();
 
-            meatBallsDish.Ingredients.Add(groundBeefIngredient);
-            meatBallsDish.Ingredients.Add(seaSaltIngredient);
-            meatBallsDish.Ingredients.Add(onionIngredient);
-            meatBallsDish.Ingredients.Add(garlicSaltIngredient);
-            meatBallsDish.Ingredients.Add(italianSeasoningIngredient);
-            meatBallsDish.Ingredients.Add(driedOreganoIngredient);
-            meatBallsDish.Ingredients.Add(redPepperFlakesIngredient);
-            meatBallsDish.Ingredients.Add(worcestershireSauceIngredient);
-            meatBallsDish.Ingredients.Add(milk2Ingredient);
-            meatBallsDish.Ingredients.Add(parmesanCheeseIngredient);
-            meatBallsDish.Ingredients.Add(breadCrumbsIngredient);
+                                if (ConvertRecipeCategoryToDishType(recipe.Category) != type)
+                                    continue;
 
-            var iceCream = new Dish("Ice cream", DishType.Dessert, "icecream.jpg", "Buy it from the ice cream man.");
-            var milk = new Ingredient("Milk", 0.5, "l", 10);
-            iceCream.Ingredients.Add(milk);
+                                var dish = CreateDishFromRecipe(recipe);
+                                if  (dish != null)
+                                    set.Add(dish);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                            }
+                        }
+                    }
 
-            var sundae = new Dish("Sundae", DishType.Dessert, "icecream.jpg", "Stack vanilla ice cream, whipped cream, sprinkles, syrup and fruit.");
-            var fruit = new Ingredient("Fruit", 0.2, "g", 20);
-            sundae.Ingredients.Add(milk);
-            sundae.Ingredients.Add(fruit);
+                    return set;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
+            return null;
+        }
 
-            AddDish(frenchToastDish);
-            AddDish(meatBallsDish);
-            AddDish(iceCream);
-            AddDish(sundae);
+        private static DishType ConvertRecipeCategoryToDishType(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+                return DishType.None;
 
-            AddDishToMenu(frenchToastDish);
-            AddDishToMenu(meatBallsDish);
-            AddDishToMenu(iceCream);
+            if (category.ToLowerInvariant() == "appetizers")
+                return DishType.Starter;
+            if (category.ToLowerInvariant() == "main dish")
+                return DishType.Main;
+            if (category.ToLowerInvariant() == "desserts")
+                return DishType.Dessert;
 
-            NumberOfGuests = 6;
+            return DishType.None;
+        }
+
+        private static string ConvertDishTypeToRecipeCategory(DishType type)
+        {
+            if (type == DishType.None)
+                return null;
+
+            if (type == DishType.Starter)
+                return "appetizers";
+            if (type == DishType.Main)
+                return "main dish";
+            if (type == DishType.Dessert)
+                return "desserts";
+
+            return null;
+        }
+
+        private static Dish CreateDishFromRecipe(BigOvenRecipe recipe)
+        {
+            if (recipe == null)
+                return null;
+
+            var dish = new Dish
+            {
+                Name = recipe.Title,
+                Type = ConvertRecipeCategoryToDishType(recipe.Category),
+                Image = recipe.ImageURL,
+                Description = (!string.IsNullOrWhiteSpace(recipe.Description) ? recipe.Description + "\n\n" : string.Empty) + recipe.Instructions
+            };
+
+            if (recipe.Ingredients != null && recipe.Ingredients.Any())
+                foreach (var ingredient in recipe.Ingredients)
+                    dish.Ingredients.Add(new Ingredient(ingredient.Name, ingredient.Quantity ?? 0, ingredient.Unit, 1));
+
+            if (dish.Name == null || dish.Image == null || dish.Type == DishType.None || !dish.Ingredients.Any())
+                return null;
+
+            return dish;
         }
     }
 }

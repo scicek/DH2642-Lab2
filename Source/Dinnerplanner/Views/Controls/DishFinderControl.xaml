@@ -13,47 +13,57 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="SearchTextBox/SearchTextBoxStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <DockPanel>
-        <searchTextBox:SearchTextBox DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="20, 7, 0, 3" FontSize="17" AllowEmptySearches="False" SearchMode="Regular" Width="150" Style="{StaticResource SearchBoxStyle}"/>
-        <Separator DockPanel.Dock="Top"/>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding ElementName=DishFinderUserControl,Path=Dishes}" FontSize="17" >
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="25, 30, 0, 0" MouseLeftButtonUp="OnMouseLeftButtonUp" Tag="{Binding}">
-                            <Grid>
-                                <Image VerticalAlignment="Center" HorizontalAlignment="Center" Source="{Binding Image, Converter={StaticResource StringToImageSourceConverter}}" Width="100" Height="100"/>
-                                <Button Tag="{Binding}" Click="OnClick" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="OverridesDefaultStyle" Value="True"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                   <ControlTemplate>
-                                                        <Grid>
-                                                            <Ellipse Fill="Green" Width="35" Height="35" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 5, 0, 0"/>
-                                                            <Label Content="+" FontWeight="Bold" FontSize="24" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                                        </Grid>
-                                                    </ControlTemplate> 
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-                            <Label HorizontalAlignment="Center" Content="{Binding Path=Name}" FontSize="17"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </ScrollViewer>
-    </DockPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <searchTextBox:SearchTextBox Grid.Row="0" x:Name="SearchTextBox" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="20, 7, 0, 3" FontSize="17" AllowEmptySearches="False" SearchMode="Regular" Width="150" Style="{StaticResource SearchBoxStyle}" PreviewKeyUp="SearchTextBox_OnPreviewKeyUp"/>
+        <Separator Grid.Row="0" VerticalAlignment="Bottom" Margin="0, 5, 0, 0"/>
+        <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="DishesList" ItemsSource="{Binding ElementName=DishFinderUserControl,Path=Dishes}" FontSize="17" >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="25, 30, 0, 0" MouseLeftButtonUp="OnMouseLeftButtonUp" Tag="{Binding}" MinWidth="150" MaxWidth="150">
+                                <Grid>
+                                    <Image VerticalAlignment="Center" HorizontalAlignment="Center" Source="{Binding Image}" Width="100" Height="100"/>
+                                    <Button Tag="{Binding}" Click="OnClick" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                       <ControlTemplate>
+                                                            <Grid>
+                                                                <Ellipse Fill="Green" Width="35" Height="35" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 5, 0, 0"/>
+                                                                <Label Content="+" FontWeight="Bold" FontSize="24" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            </Grid>
+                                                        </ControlTemplate> 
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                                <TextBlock HorizontalAlignment="Center" Text="{Binding Path=Name}" TextWrapping="Wrap" FontSize="17"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+            <Grid x:Name="Loading" Visibility="Hidden">
+                <Grid Background="Black" Opacity="0.9"/>
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="Loading..." Foreground="White" FontSize="30"/>
+            </Grid>
+        </Grid>
+    </Grid>
 </UserControl>

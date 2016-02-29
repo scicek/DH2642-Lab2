@@ -10,9 +10,6 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel, IsDesignTimeCreatable=True}"
         Title="Dinner Planner" Height="600" Width="800"  >
-    <Window.Resources>
-        <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter"/>
-    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -22,13 +19,13 @@
 
         <TabControl Grid.Column="0" FontSize="17">
             <TabItem Header="Starter">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Starters}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
+                <controls:DishFinderControl Dishes="{Binding Path=Starters}" SelectDish="OnSelectDish" AddDish="OnAddDish" Search="StarterOnSearch"/>
             </TabItem>
             <TabItem Header="Main">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Mains}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
+                <controls:DishFinderControl Dishes="{Binding Path=Mains}" SelectDish="OnSelectDish" AddDish="OnAddDish" Search="MainOnSearch"/>
             </TabItem>
             <TabItem Header="Dessert">
-                <controls:DishFinderControl VerticalAlignment="Top" Dishes="{Binding Path=Desserts}" SelectDish="OnSelectDish" AddDish="OnAddDish"/>
+                <controls:DishFinderControl Dishes="{Binding Path=Desserts}" SelectDish="OnSelectDish" AddDish="OnAddDish" Search="DessertOnSearch"/>
             </TabItem>
         </TabControl>
         <ContentControl Grid.Column="1" Width="12" HorizontalAlignment="Stretch">
@@ -77,14 +74,14 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                             
-                                <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Source="{Binding Image, Converter={StaticResource StringToImageSourceConverter}}"  Width="60"/>
-                                <StackPanel Grid.Column="1" Margin="10, 0" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Source="{Binding Image}"  Width="60"/>
+                                <StackPanel Grid.Column="1" Margin="10, 0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" MaxWidth="150">
+                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center" TextWrapping="Wrap">
                                         <Run Text="{Binding Type}"/>
                                         <Run Text=": "/>
                                         <Run Text="{Binding Name}"/>
                                     </TextBlock>
-                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center" TextWrapping="Wrap">
                                         <Run Text="Cost: $"/>
                                         <Run Text="{Binding Cost, Mode=OneWay}"/>
                                     </TextBlock>

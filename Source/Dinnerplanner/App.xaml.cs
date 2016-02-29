@@ -1,6 +1,7 @@
 ﻿namespace Dinnerplanner
 {
     using System.Windows;
+    using Models;
     using ViewModels;
     using Views;
 

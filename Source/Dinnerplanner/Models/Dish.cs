@@ -6,13 +6,17 @@
 
     public class Dish
     {
-        public Dish(String name, DishType type, String image, String description) 
+        public Dish()
+        {
+            Ingredients = new HashSet<Ingredient>();
+        }
+
+        public Dish(String name, DishType type, String image, String description) : this()
         {
 		    Name = name;
 		    Type = type;
 		    Image = image;
 		    Description = description;
-            Ingredients = new HashSet<Ingredient>();
         }
 
         public string Name { get; set; }
@@ -29,7 +33,7 @@
         {
             get
             {
-                return Ingredients.Sum(ingredient => (float)ingredient.Price);
+                return (float)Math.Round(Ingredients.Sum(ingredient => (float)ingredient.Price * ingredient.Quantity));
             }
         }
 
@@ -46,5 +50,31 @@
 		    
             return false;
 	    }
+
+        protected bool Equals(Dish other)
+        {
+            return string.Equals(Name, other.Name) && Type == other.Type && string.Equals(Image, other.Image) && string.Equals(Description, other.Description) && Equals(Ingredients, other.Ingredients);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Dish) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (int) Type;
+                hashCode = (hashCode*397) ^ (Image != null ? Image.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (Description != null ? Description.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (Ingredients != null ? Ingredients.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

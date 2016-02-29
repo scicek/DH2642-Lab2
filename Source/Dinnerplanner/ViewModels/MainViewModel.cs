@@ -1,11 +1,10 @@
 ﻿namespace Dinnerplanner.ViewModels
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Windows;
-    using System.Windows.Input;
-    using System.Windows.Threading;
     using Models;
     using Views;
 
@@ -27,6 +26,7 @@
         public MainViewModel(DishWindow dishWindow, IngredientsWindow ingredientsWindow, PreparationWindow preparationWindow)
         {
             _dinner = new Dinner();
+            
             _dishWindow = dishWindow;
             _ingredientsWindow = ingredientsWindow;
             _preparationWindow = preparationWindow;
@@ -54,8 +54,41 @@
             }, o => Menu.Any());
 
             _dinner.MenuChanged += OnMenuChanged;
+            _dinner.FilteredDishes += DinnerOnFilteredDishes;
             _dinner.DishesChanged += OnDishesChanged;
             _dinner.NumberOfGuestsChanged += OnNumberOfGuestsChanged;
+        }
+
+        private void DinnerOnFilteredDishes(object sender, Tuple<DishType, HashSet<Dish>> tuple)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+
+                if (tuple.Item1 == DishType.Starter)
+                {
+                    Starters.Clear();
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Starters.Add(dish);
+                    }
+                }
+                else if (tuple.Item1 == DishType.Main)
+                {
+                    Mains.Clear();
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Mains.Add(dish);
+                    }
+                }
+                else if (tuple.Item1 == DishType.Dessert)
+                {
+                    Desserts.Clear();
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Desserts.Add(dish);
+                    }
+                }
+            });
         }
 
         public ObservableCollection<Dish> Starters
@@ -146,6 +179,11 @@
         public void OnRemoveDish(Dish dish)
         {
             _dinner.RemoveDishFromMenu(dish);
+        }
+
+        public void FilterDishes(DishType type, string filter)
+        {
+            _dinner.GetAllDishes(type, filter);
         }
 
         private void OnNumberOfGuestsChanged(object sender, EventArgs eventArgs)

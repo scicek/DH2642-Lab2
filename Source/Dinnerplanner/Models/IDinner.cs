@@ -1,9 +1,15 @@
 ﻿namespace Dinnerplanner.Models
 {
+    using System;
     using System.Collections.Generic;
 
     public interface IDinner
     {
+        /// <summary>
+        /// Fired after a call to <see cref="GetAllDishes"/>.
+        /// </summary>
+        event EventHandler<Tuple<DishType, HashSet<Dish>>> FilteredDishes; 
+
         /// <summary>
         /// Gets the number of guests.
         /// </summary>
@@ -13,6 +19,13 @@
         /// Returns all the dishes on the menu.
         /// </summary>
         HashSet<Dish> FullMenu { get; }
+
+        /// <summary>
+        /// Gets all dishes that match the filter. The dishes are retrieved asynchronously so use <see cref="FilteredDishes"/> to get the dishes.
+        /// </summary>
+        /// <param name="type">The type of dishes to get.</param>
+        /// <param name="filter">Used to filter the dishes.</param>
+        void GetAllDishes(DishType type, string filter);
 
         /// <summary>
         /// Returns all ingredients for all the dishes on the menu.

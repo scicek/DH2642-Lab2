@@ -32,5 +32,20 @@
         {
             _mainViewModel.OnRemoveDish((Dish)((FrameworkElement) sender).Tag);
         }
+
+        private void StarterOnSearch(object sender, string e)
+        {
+            _mainViewModel.FilterDishes(DishType.Starter, e);
+        }
+
+        private void MainOnSearch(object sender, string e)
+        {
+            _mainViewModel.FilterDishes(DishType.Main, e);
+        }
+
+        private void DessertOnSearch(object sender, string e)
+        {
+            _mainViewModel.FilterDishes(DishType.Dessert, e);
+        }
     }
 }
