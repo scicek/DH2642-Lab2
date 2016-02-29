@@ -4,12 +4,16 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
     using Models;
     using Views;
 
     public class MainViewModel : NotifyPropertyChangedBase
     {
+        private const int ErrorTextDisplayTime = 2000;
+
         private readonly DishWindow _dishWindow;
         private readonly IngredientsWindow _ingredientsWindow;
         private readonly PreparationWindow _preparationWindow;
@@ -19,9 +23,13 @@
         private readonly PreparationViewModel _preparationViewModel;
         
         private readonly Dinner _dinner;
+        private System.Timers.Timer _hideErrorTextTimer;
+
         private ObservableCollection<Dish> _starters;
         private ObservableCollection<Dish> _mains;
         private ObservableCollection<Dish> _desserts;
+        private string _errorText;
+        private bool _errorTextVisible;
 
         public MainViewModel(DishWindow dishWindow, IngredientsWindow ingredientsWindow, PreparationWindow preparationWindow)
         {
@@ -40,6 +48,9 @@
             Desserts = new ObservableCollection<Dish>();
             Menu = new ObservableCollection<Dish>();
 
+            _hideErrorTextTimer = new System.Timers.Timer(ErrorTextDisplayTime) {AutoReset = false};
+            _hideErrorTextTimer.Elapsed += (sender, args) => Application.Current.Dispatcher.Invoke(() => ErrorTextVisible = false);
+
             ShowPreparations = new DelegateCommand(o =>
             {
                 _preparationViewModel.Starter = _dinner.GetSelectedDish(DishType.Starter);
@@ -55,40 +66,9 @@
 
             _dinner.MenuChanged += OnMenuChanged;
             _dinner.FilteredDishes += DinnerOnFilteredDishes;
+            _dinner.ErrorGettingFilteredDishes += DinnerOnErrorGettingFilteredDishes;
             _dinner.DishesChanged += OnDishesChanged;
             _dinner.NumberOfGuestsChanged += OnNumberOfGuestsChanged;
-        }
-
-        private void DinnerOnFilteredDishes(object sender, Tuple<DishType, HashSet<Dish>> tuple)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-
-                if (tuple.Item1 == DishType.Starter)
-                {
-                    Starters.Clear();
-                    foreach (var dish in tuple.Item2)
-                    {
-                        Starters.Add(dish);
-                    }
-                }
-                else if (tuple.Item1 == DishType.Main)
-                {
-                    Mains.Clear();
-                    foreach (var dish in tuple.Item2)
-                    {
-                        Mains.Add(dish);
-                    }
-                }
-                else if (tuple.Item1 == DishType.Dessert)
-                {
-                    Desserts.Clear();
-                    foreach (var dish in tuple.Item2)
-                    {
-                        Desserts.Add(dish);
-                    }
-                }
-            });
         }
 
         public ObservableCollection<Dish> Starters
@@ -160,6 +140,36 @@
             }
         }
 
+        public string ErrorText
+        {
+            get
+            {
+                return _errorText; 
+                
+            }
+
+            set
+            {
+                _errorText = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ErrorTextVisible
+        {
+            get
+            {
+                return _errorTextVisible; 
+                
+            }
+
+            set
+            {
+                _errorTextVisible = value;
+                OnPropertyChanged();
+            }
+        }
+
         public DelegateCommand ShowPreparations { get; set; }
 
         public DelegateCommand ShowIngredients { get; set; }
@@ -208,6 +218,67 @@
 
                 foreach (var dish in _dinner.GetDishesOfType(DishType.Dessert))
                     Desserts.Add(dish);
+            });
+        }
+
+        private void DinnerOnFilteredDishes(object sender, Tuple<DishType, HashSet<Dish>> tuple)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (tuple.Item1 == DishType.Starter)
+                {
+                    Starters.Clear();
+                    if (tuple.Item2 == null || !tuple.Item2.Any())
+                        return;
+
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Starters.Add(dish);
+                    }
+                }
+                else if (tuple.Item1 == DishType.Main)
+                {
+                    Mains.Clear();
+
+                    if (tuple.Item2 == null || !tuple.Item2.Any())
+                        return;
+                    
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Mains.Add(dish);
+                    }
+                }
+                else if (tuple.Item1 == DishType.Dessert)
+                {
+                    Desserts.Clear();
+
+                    if (tuple.Item2 == null || !tuple.Item2.Any())
+                        return;
+
+                    foreach (var dish in tuple.Item2)
+                    {
+                        Desserts.Add(dish);
+                    }
+                }
+            });
+        }
+
+        private void DinnerOnErrorGettingFilteredDishes(object sender, Tuple<DishType, string> tuple)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ErrorText = tuple.Item2;
+                ErrorTextVisible = true;
+
+                _hideErrorTextTimer.Stop();
+                _hideErrorTextTimer.Start();
+
+                if (tuple.Item1 == DishType.Starter)
+                    Starters.Clear();
+                else if (tuple.Item1 == DishType.Main)
+                    Mains.Clear();
+                else if (tuple.Item1 == DishType.Dessert)
+                    Desserts.Clear();
             });
         }
 

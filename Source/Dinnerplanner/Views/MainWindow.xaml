@@ -9,7 +9,10 @@
         xmlns:converters="clr-namespace:Dinnerplanner.Views.Converters"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel, IsDesignTimeCreatable=True}"
-        Title="Dinner Planner" Height="600" Width="800"  >
+        Title="Dinner Planner" Height="600" Width="800">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -28,6 +31,11 @@
                 <controls:DishFinderControl Dishes="{Binding Path=Desserts}" SelectDish="OnSelectDish" AddDish="OnAddDish" Search="DessertOnSearch"/>
             </TabItem>
         </TabControl>
+
+        <Grid Grid.Column="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,2,2" Visibility="{Binding ErrorTextVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Label Content="{Binding ErrorText}" Margin="0,-2,0,2" Foreground="Red" FontWeight="Bold" FontSize="17"/>
+        </Grid>
+        
         <ContentControl Grid.Column="1" Width="12" HorizontalAlignment="Stretch">
             <Grid>
                 <Border Background="#F6F6F6" BorderThickness="1" BorderBrush="Black"/>

@@ -6,26 +6,28 @@
         xmlns:viewModels="clr-namespace:Dinnerplanner.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:PreparationViewModel, IsDesignTimeCreatable=True}"
-        Width="800" Height="600" MaxWidth="800" ResizeMode="NoResize"
+        Width="800" Height="600" MaxWidth="800" MaxHeight="800" ResizeMode="NoResize"
         Title="Dinner planner - Preparation" SizeToContent="Height" Closing="PreparationWindow_OnClosing">
-    <StackPanel Margin="20">
-        <Label Content="Dinner menu preparations" HorizontalAlignment="Center" FontWeight="Bold" FontSize="19"/>
-        <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" TextWrapping="Wrap">
-            <Run Text="Starter: "/>
-            <Run Text="{Binding Starter.Name}"/>
-        </TextBlock>
-        <TextBlock HorizontalAlignment="Center" Text="{Binding Starter.Description}" TextWrapping="Wrap" FontSize="13"/>
+    <ScrollViewer>
+        <StackPanel Margin="20">
+            <Label Content="Dinner menu preparations" HorizontalAlignment="Center" FontWeight="Bold" FontSize="19"/>
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" TextWrapping="Wrap">
+                <Run Text="Starter: "/>
+                <Run Text="{Binding Starter.Name}"/>
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Starter.Description}" TextWrapping="Wrap" FontSize="13"/>
 
-        <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" Margin="0, 15, 0, 0" TextWrapping="Wrap">
-            <Run Text="Main: "/>
-            <Run Text="{Binding Main.Name}"/>
-        </TextBlock>
-        <TextBlock HorizontalAlignment="Center" Text="{Binding Main.Description}" TextWrapping="Wrap" FontSize="13"/>
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" Margin="0, 15, 0, 0" TextWrapping="Wrap">
+                <Run Text="Main: "/>
+                <Run Text="{Binding Main.Name}"/>
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Main.Description}" TextWrapping="Wrap" FontSize="13"/>
 
-        <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" Margin="0, 15, 0, 0" TextWrapping="Wrap">
-            <Run Text="Dessert: "/>
-            <Run Text="{Binding Dessert.Name}"/>
-        </TextBlock>
-        <TextBlock HorizontalAlignment="Center" Text="{Binding Dessert.Description}" TextWrapping="Wrap" FontSize="13"/>
-    </StackPanel>
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="17" Margin="0, 15, 0, 0" TextWrapping="Wrap">
+                <Run Text="Dessert: "/>
+                <Run Text="{Binding Dessert.Name}"/>
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Dessert.Description}" TextWrapping="Wrap" FontSize="13"/>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

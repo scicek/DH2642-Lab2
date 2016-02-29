@@ -11,6 +11,11 @@
         event EventHandler<Tuple<DishType, HashSet<Dish>>> FilteredDishes; 
 
         /// <summary>
+        /// Fired after a call to <see cref="GetAllDishes"/> fails.
+        /// </summary>
+        event EventHandler<Tuple<DishType, string>> ErrorGettingFilteredDishes; 
+
+        /// <summary>
         /// Gets the number of guests.
         /// </summary>
         int NumberOfGuests { get; set; }

@@ -60,10 +60,44 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
             </ScrollViewer>
-            <Grid x:Name="Loading" Visibility="Hidden">
-                <Grid Background="Black" Opacity="0.9"/>
-                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="Loading..." Foreground="White" FontSize="30"/>
-            </Grid>
+            
+            <TextBlock Text="No dishes!" Foreground="Black" FontSize="25" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Hidden"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=DishesList, Path=Items.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Canvas x:Name="Loading" Visibility="Visible">
+                <Rectangle Fill="Black" Opacity="0.9" Width="{Binding ElementName=Loading, Path=ActualWidth}" Height="{Binding ElementName=Loading, Path=ActualHeight}"/>
+                <TextBlock x:Name="LoadingLabel" Text="Loading" Foreground="White" FontSize="30" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <StringAnimationUsingKeyFrames Storyboard.TargetProperty="Text" RepeatBehavior="Forever">
+                                                <DiscreteStringKeyFrame Value="Loading" KeyTime="0:0:0" />
+                                                <DiscreteStringKeyFrame Value="Loading." KeyTime="0:0:0.1" />
+                                                <DiscreteStringKeyFrame Value="Loading.." KeyTime="0:0:0.4" />
+                                                <DiscreteStringKeyFrame Value="Loading..." KeyTime="0:0:0.7" />
+                                                <DiscreteStringKeyFrame Value="Loading...." KeyTime="0:0:1" />
+                                            </StringAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Canvas>
         </Grid>
     </Grid>
 </UserControl>

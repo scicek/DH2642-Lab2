@@ -6,9 +6,7 @@
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-    using System.Windows;
     using BigOven;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     public class Dinner : IDinner
@@ -29,6 +27,7 @@
         public event EventHandler MenuChanged; 
         public event EventHandler NumberOfGuestsChanged;
         public event EventHandler<Tuple<DishType, HashSet<Dish>>> FilteredDishes;
+        public event EventHandler<Tuple<DishType, string>> ErrorGettingFilteredDishes;
 
         public int NumberOfGuests
         {
@@ -62,8 +61,23 @@
         {
             Task.Run(() =>
             {
-                var result = GetRecipes(type, filter);
-                FilteredDishes.Raise(this, new Tuple<DishType, HashSet<Dish>>(type, result.Result));
+                try
+                {
+                    var result = GetRecipes(type, filter);
+                    FilteredDishes.Raise(this, new Tuple<DishType, HashSet<Dish>>(type, result.Result));
+                }
+                catch (Exception e)
+                {
+                    var message = e.Message;
+
+                    if (e.InnerException != null)
+                    {
+                        if (e.InnerException.GetType() == typeof (HttpRequestException))
+                            message = "Could not connect to the recipe server!";
+                    }
+
+                    ErrorGettingFilteredDishes.Raise(this, new Tuple<DishType, string>(type, message));
+                }
             }); 
         }
 
@@ -150,60 +164,45 @@
             MenuChanged.Raise(this);
         }
 
-        private void AddDish(Dish dish)
-        {
-            Dishes.Add(dish);
-            DishesChanged.Raise(this);
-        }
-
         private static async Task<HashSet<Dish>> GetRecipes(DishType type, string filter)
         {
-            try
+            using (var client = new HttpClient())
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(BigOvenURL);
-                    client.DefaultRequestHeaders.Accept.Clear();
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.BaseAddress = new Uri(BigOvenURL);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var response = await client.GetAsync("recipes?api_key=" + BigOvenApiKey + "&any_kw=" + filter + "&pg=1&rpp=10").ConfigureAwait(false);
-                    var set = new HashSet<Dish>();
+                var response = await client.GetAsync("recipes?api_key=" + BigOvenApiKey + (!string.IsNullOrWhiteSpace(filter) ? "&any_kw=" + filter : string.Empty) + "&pg=1&rpp=20").ConfigureAwait(false);
+                var set = new HashSet<Dish>();
                     
-                    if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var recipes = await response.Content.ReadAsAsync<object>();
+                    dynamic parsedRecipes = JObject.Parse(recipes.ToString());
+
+                    foreach (var result in parsedRecipes.Results)
                     {
-                        var recipes = await response.Content.ReadAsAsync<object>();
-                        dynamic parsedRecipes = JObject.Parse(recipes.ToString());
-
-                        foreach (var result in parsedRecipes.Results)
+                        try
                         {
-                            try
-                            {
-                                response = await client.GetAsync("recipe/" + result.RecipeID + "/?api_key=" + BigOvenApiKey).ConfigureAwait(false);
-                                var recipe = await response.Content.ReadAsAsync<BigOvenRecipe>();
+                            response = await client.GetAsync("recipe/" + result.RecipeID + "/?api_key=" + BigOvenApiKey).ConfigureAwait(false);
+                            var recipe = await response.Content.ReadAsAsync<BigOvenRecipe>();
 
-                                if (ConvertRecipeCategoryToDishType(recipe.Category) != type)
-                                    continue;
+                            if (ConvertRecipeCategoryToDishType(recipe.Category) != type)
+                                continue;
 
-                                var dish = CreateDishFromRecipe(recipe);
-                                if  (dish != null)
-                                    set.Add(dish);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                            }
+                            var dish = CreateDishFromRecipe(recipe);
+                            if  (dish != null)
+                                set.Add(dish);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
                         }
                     }
-
-                    return set;
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
 
-            return null;
+                return set;
+            }
         }
 
         private static DishType ConvertRecipeCategoryToDishType(string category)
@@ -219,21 +218,6 @@
                 return DishType.Dessert;
 
             return DishType.None;
-        }
-
-        private static string ConvertDishTypeToRecipeCategory(DishType type)
-        {
-            if (type == DishType.None)
-                return null;
-
-            if (type == DishType.Starter)
-                return "appetizers";
-            if (type == DishType.Main)
-                return "main dish";
-            if (type == DishType.Dessert)
-                return "desserts";
-
-            return null;
         }
 
         private static Dish CreateDishFromRecipe(BigOvenRecipe recipe)

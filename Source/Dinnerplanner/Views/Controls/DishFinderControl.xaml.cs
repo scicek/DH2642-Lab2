@@ -8,6 +8,7 @@
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Input;
+    using System.Windows.Media.Animation;
     using Annotations;
     using Models;
 
@@ -56,6 +57,11 @@
             {
                 Search.Raise(this, SearchTextBox.Text);
                 Loading.Visibility = Visibility.Visible;
+                
+                double left = (Loading.ActualWidth - LoadingLabel.ActualWidth) / 2;
+                Canvas.SetLeft(LoadingLabel, left);
+                double top = (Loading.ActualHeight - LoadingLabel.ActualHeight) / 2;
+                Canvas.SetTop(LoadingLabel, top);
             }
         }
 
